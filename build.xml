@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+<project name="love" default="dist" basedir=".">
+    <property name="version" value="1.00.100"></property>
+    <property name="root.dir" value="."/>
+    <property name="zip.filename" value="love"/>
+    <property name="tar.filename" value="love_v${version}.tar"/>
+    <property name="gzip.filename" value="${tar.filename}.gz"></property>
+    <property name="src.dir" location="src"/>
+    <property name="resource.dir" location="resource"/>
+    <property name="build.dir" location="build_tmp"/>
+    <property name="dist.dir" location="dist_tmp"/>
+    <property name="lib.dir" location="web\WEB-INF\lib"/>
+    <property name="webroot.dir" location="web"/>
+    <property name="tomcat.lib" location="/Users/jiangwenping/soft/apache-tomcat-7.0.67"/>
+
+    <!-- =================================================================== -->
+    <!-- Initialization target                                               -->
+    <!-- =================================================================== -->
+    <target name="init" depends="clean">
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${dist.dir}" />
+        <path id="classpath">
+            <pathelement path="${classpath}"/>
+            <fileset dir="${lib.dir}">
+                <include name="**/*.jar"/>
+            </fileset>
+            <fileset dir="${tomcat.lib}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </path>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Compiles the source directory                                       -->
+    <!-- =================================================================== -->
+    <target name="compile" depends="init">
+        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="true" includeantruntime="on">
+            <compilerarg line="-encoding UTF-8"/>
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+    <target name="dist" depends="compile">
+        <copy todir="${dist.dir}">
+            <fileset dir="${webroot.dir}">
+            </fileset>
+        </copy>
+        <delete dir="${build.dir}"/>
+        <antcall target="tar"></antcall>
+        <antcall target="clean"></antcall>
+    </target>
+
+    <target name="zip">
+        <delete file="${root.dir}/${zip.filename}.zip"></delete>
+        <zip destfile="${root.dir}/${zip.filename}.zip">
+            <fileset dir="${dist.dir}">
+                <exclude name="WEB-INF/lib/**"/>
+            </fileset>
+        </zip>
+    </target>
+
+    <target name="tar">
+        <delete file="${root.dir}/${gzip.filename}"></delete>
+        <tar destfile="${root.dir}/${tar.filename}">
+            <fileset dir="${dist.dir}">
+            </fileset>
+        </tar>
+        <gzip src="${root.dir}/${tar.filename}" destfile="${root.dir}/${gzip.filename}"/>
+        <delete file="${root.dir}/${tar.filename}"></delete>
+        <tstamp>
+            <format property="now" pattern="yyyy-MM-dd HH:mm:ss" locale="us"/>
+        </tstamp>
+        <echo>${now}</echo>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+</project>
